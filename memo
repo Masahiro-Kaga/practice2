@@ -1,0 +1,83 @@
+110
+
+　useEffectの挙動＝２つ目の因数が[空欄]だったら、ただ、画面が開かれたりリフレッシュした時だけその中のファンクションとかが発動する。useStateとかでコンポーネント全体が読み込まれる際も、useEffectの中のファンクションとかは発動しない。
+
+  １　ローカルストレージの設定・呼出・削除方法。
+
+　設定するには、
+  localStorage.setItem('isLoggedIn'(key),'1'(value))
+  ウェブブラウザのinspection -> Application -> Storage -> localStorage　に、データが格納されていることがわかる。
+
+  呼び出して変数に代入するには、
+　const storedUserLoggedInInformation = localStorage.getItem('isLoggedIn')
+
+  削除するには、
+  localStorage.removeItem('isLoggedIn')
+
+　２ useEffectの使い方。
+　
+　ページをリフレッシュした時に、ログイン状態（localStrageの値が真（1））だったら、ログイン画面をリフレッシュ前同様に表示させるのが目的。
+
+  infinite loopを避けなければいけないことに注意。
+　useEffectファンクションのdependencyがあるのとないのとで、挙動の違いを覚えておく。
+
+
+　111
+ 
+  dependencyが変化した場合に、useEffect内のファンクションが発動するようにする。
+  Login.jsコンポーネントにて。
+
+
+  113
+
+  キーストロークするたびにコンポーネントを更新するのは効率が悪いので、setTimeoutとuseEffectを利用して、キーストロークが終わって０.５秒の後にバリデーションを発動させる。
+
+  setTimeoutは、指定した時間に到達して一度だけ、発動されるもの。繰り返し発動するsetIntervalとは違うので注意。
+
+  returnの後に値ではなく、　()=>{}　を入れると、通常のリターン時に値を返すのではなく、ファンクションなどを発動するという挙動になる。
+
+　useEffect内でreturnを使った場合、dependencyの変数に変化が加えられて初めて発動するもの。
+　よって、今回のuseEffectの挙動は、
+　(ページ読込) -> SetTimeout -> (文字入力) -> 変数変更　-> clearTimeout -> SetTimeout -> の繰り返し。
+　素早く文字入力すれば、setTimeoutが0.5秒たたないうちにclearTimeoutでファンクションがクリアされる。
+　次の項のコードの方が挙動がわかりやすいので、理解するには次の項を参考のこと。
+
+
+114
+
+　useEffectの第二引数にenteredEmailを入れたバージョンでも挙動を確認すると理解しやすい。
+  結局、returnの後は、コンポーネントがuseStateなどで更新された際に発動されるもの。
+  
+
+115-117
+
+  useReducer実践。
+
+　順序としては、
+    １　reducerの式をコンポーネントの中に作る（それぞれの引数や変数の名前を定義する、かつ、必要なstateの形、例えば変数一個かオブジェクトか配列か、そしてその初期値の設定）。
+    ２　reducerの第一引数のファンクションを、コンポーネント外に定義。どのような値をstateに返したいのか。Typeには、dispatchを発動させるためのアクションの種類を名前に設定する。例えば、Userがインプットする時、typeは’USER_INPUT’にする、等。
+    ３　dispatchファンクションを設定。第一引数に引き金となるタイプを設定。その後の引数には、reducerで新しいデータを使ってstateを更新するために必要な新変数を設定。
+    　　dispatchファンクションを発動するためのファンクションを設定する必要あり。
+     　　  const somethingChangeHandler = (event) => {
+            dispatchEmail({type:'INPUT_EMAIL' , value:event.target.value});
+          };
+
+    ミソは、dispatchで送られてくるデータとreducerの第一引数が連動するということをいつも意識すること。
+
+　reducerのテンプレ
+   const [state,dispatch Function] = useReducer(reducer Function, initialState, (inital Function));
+　
+　useReducerについて。
+    第二引数はファンクションでなければならない。かつ、コンポーネントの外に変数で定義しておく方が良い。区別した方がコードと挙動が分析しやすい。そして、必ずreturnでstateを返すようにする。
+    さらにこのファンクションの第一引数には現在のstate、第二引数にはdispatch Functionの引数の値が入る。
+      const dispatchReducer = (state【現在のstate】, action【下でリターンされるstate】) => {
+        if (action.type === "USER_INPUT") {
+          return { value: action.val, isValid: action.val.trim().length > 6 };
+        }
+      
+      ⇩
+
+      const passwordChangeHandler = (event) => {
+        dispatchFunction({ type: "USER_INPUT", val: event.target.value });　【←これが上のactionに入る】
+      };
+        
