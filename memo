@@ -49,7 +49,7 @@
   結局、returnの後は、コンポーネントがuseStateなどで更新された際に発動されるもの。
   
 
-115-117
+115-117_1
 
   useReducer実践。
 
@@ -81,3 +81,27 @@
         dispatchFunction({ type: "USER_INPUT", val: event.target.value });　【←これが上のactionに入る】
       };
         
+
+117_2
+
+  useEffectを復活させるが、Dependencyに注目。
+  ビデオでは、初期段階では
+  
+  [emailState, passwordState])
+  
+  を設定している。
+  これは、stateの中のvalueかisValidどちらかでも変更が加えられればuseEffectが働く事になる。
+  valueはユーザーが入力する度に変更が加わるが、useEffectでは入力内容がvalid若しくはinvalidになった時だけuseEffectが発動すれば良いので、
+  
+  [emailState.isValid, passwordState.isValid])
+
+  とすることで、useEffectが無駄に発動しまくることを防ぐことができる。
+
+  しかし、別の技・参考として、ビデオでは「オブジェクトのエイリアス」というJS機能を使っている。
+  つまり、下の場合は、emailIsValidという変数に、emailState.isValidを代入しているという意味になる。
+
+  const { isValid: emailIsValid } = emailState;
+  const { isValid: passwordIsValid } = passwordState;
+
+　[emailIsValid, passwordIsValid]);
+
