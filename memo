@@ -82,7 +82,7 @@
       };
         
 
-117_2
+117_2(118に英語のディスクリプションにて解説あり。多分、見てる人から説明足りないとクレームあったのか。)
 
   useEffectを復活させるが、Dependencyに注目。
   ビデオでは、初期段階では
@@ -105,3 +105,15 @@
 
 　[emailIsValid, passwordIsValid]);
 
+
+121
+
+  useContextの使い方。
+  通常、他のコンポーネントから変数を持ってくる場合はpropsを使うが、useContextを使うことでprops chain/props soupが必要なくなる。
+
+  手順とそれぞれの役割
+    AuthContext -> コンテクストの型を作り（＋初期値の設定）、かつベース基地となる。変数等をここに吸い上げて、コンポーネントに送る。
+    Provider -> そのコンポーネント内で得られる変数を上のベース基地に送り込む
+    Consumer -> ベース基地から変数を拝借する
+
+  この項では、isLoggedInがApp -> MainHeader -> Navigationとチェーンになっているので、useContextを使ってシンプルにしている。
