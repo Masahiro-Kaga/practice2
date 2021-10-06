@@ -162,3 +162,19 @@
     5 あとは、propsで処理されているコンポーネント（特にprops soup化しているもの）で、必要なものをcontextに置き換える。
 
     
+125
+
+　Hookのルール説明。
+　コンポーネントの一番上に設定しなければダメ。ネストされていたりしたらダメ。
+　あとは、useeffectのルールとして、中の変数は全てdependencyとして設定すること。
+
+  useEffect(() => {
+    const identifier = setTimeout(() => {
+      setFormIsValid(emailIsValid && passwordIsValid);
+  ・・・・・
+  }, [emailIsValid, passwordIsValid]);
+
+　この場合、emailIsValid, passwordIsValidどちらか一方でも欠けていたら警告が出る。若しくはどちらも削除する必要がある。
+　なお、identifierはuseeffectの中で初めて設定した変数なので関係ない。
+
+    
