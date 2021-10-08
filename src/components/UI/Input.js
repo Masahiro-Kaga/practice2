@@ -1,7 +1,11 @@
-import React from 'react';
+import React ,{ useRef, useEffect} from 'react';
 import classes from './Input.module.css';
 
 const Input = (props) => {
+    const inputRef = useRef();
+    useEffect (()=>{
+        inputRef.current.focus();
+    },[]);
 
     return (
         <div
@@ -9,6 +13,7 @@ const Input = (props) => {
         >
             <label htmlFor={props.htmlFor}>{props.title}</label>
             <input
+                ref = {inputRef}
                 type={props.type}
                 id={props.id}
                 value={props.value}
