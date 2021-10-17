@@ -1,213 +1,152 @@
-110
-
-　useEffectの挙動＝２つ目の因数が[空欄]だったら、ただ、画面が開かれたりリフレッシュした時だけその中のファンクションとかが発動する。useStateとかでコンポーネント全体が読み込まれる際も、useEffectの中のファンクションとかは発動しない。
-
-  １　ローカルストレージの設定・呼出・削除方法。
-
-　設定するには、
-  localStorage.setItem('isLoggedIn'(key),'1'(value))
-  ウェブブラウザのinspection -> Application -> Storage -> localStorage　に、データが格納されていることがわかる。
-
-  呼び出して変数に代入するには、
-　const storedUserLoggedInInformation = localStorage.getItem('isLoggedIn')
-
-  削除するには、
-  localStorage.removeItem('isLoggedIn')
-
-　２ useEffectの使い方。
-　
-　ページをリフレッシュした時に、ログイン状態（localStrageの値が真（1））だったら、ログイン画面をリフレッシュ前同様に表示させるのが目的。
-
-  infinite loopを避けなければいけないことに注意。
-　useEffectファンクションのdependencyがあるのとないのとで、挙動の違いを覚えておく。
-
-
-　111
- 
-  dependencyが変化した場合に、useEffect内のファンクションが発動するようにする。
-  Login.jsコンポーネントにて。
-
-
-  113
-
-  キーストロークするたびにコンポーネントを更新するのは効率が悪いので、setTimeoutとuseEffectを利用して、キーストロークが終わって０.５秒の後にバリデーションを発動させる。
-
-  setTimeoutは、指定した時間に到達して一度だけ、発動されるもの。繰り返し発動するsetIntervalとは違うので注意。
-
-  returnの後に値ではなく、　()=>{}　を入れると、通常のリターン時に値を返すのではなく、ファンクションなどを発動するという挙動になる。
-
-　useEffect内でreturnを使った場合、dependencyの変数に変化が加えられて初めて発動するもの。
-　よって、今回のuseEffectの挙動は、
-　(ページ読込) -> SetTimeout -> (文字入力) -> 変数変更　-> clearTimeout -> SetTimeout -> の繰り返し。
-　素早く文字入力すれば、setTimeoutが0.5秒たたないうちにclearTimeoutでファンクションがクリアされる。
-　次の項のコードの方が挙動がわかりやすいので、理解するには次の項を参考のこと。
-
-
-114
-
-　useEffectの第二引数にenteredEmailを入れたバージョンでも挙動を確認すると理解しやすい。
-  結局、returnの後は、コンポーネントがuseStateなどで更新された際に発動されるもの。
+152
   
-
-115-117_1
-
-  useReducer実践。
-
-　順序としては、
-    １　reducerの式をコンポーネントの中に作る（それぞれの引数や変数の名前を定義する、かつ、必要なstateの形、例えば変数一個かオブジェクトか配列か、そしてその初期値の設定）。
-    ２　reducerの第一引数のファンクションを、コンポーネント外に定義。どのような値をstateに返したいのか。Typeには、dispatchを発動させるためのアクションの種類を名前に設定する。例えば、Userがインプットする時、typeは’USER_INPUT’にする、等。
-    ３　dispatchファンクションを設定。第一引数に引き金となるタイプを設定。その後の引数には、reducerで新しいデータを使ってstateを更新するために必要な新変数を設定。
-    　　dispatchファンクションを発動するためのファンクションを設定する必要あり。
-     　　  const somethingChangeHandler = (event) => {
-            dispatchEmail({type:'INPUT_EMAIL' , value:event.target.value});
-          };
-
-    ミソは、dispatchで送られてくるデータとreducerの第一引数が連動するということをいつも意識すること。
-
-　reducerのテンプレ
-   const [state,dispatch Function] = useReducer(reducer Function, initialState, (inital Function));
-　
-　useReducerについて。
-    第二引数はファンクションでなければならない。かつ、コンポーネントの外に変数で定義しておく方が良い。区別した方がコードと挙動が分析しやすい。そして、必ずreturnでstateを返すようにする。
-    さらにこのファンクションの第一引数には現在のstate、第二引数にはdispatch Functionの引数の値が入る。
-      const dispatchReducer = (state【現在のstate】, action【下でリターンされるstate】) => {
-        if (action.type === "USER_INPUT") {
-          return { value: action.val, isValid: action.val.trim().length > 6 };
-        }
-      
-      ⇩
-
-      const passwordChangeHandler = (event) => {
-        dispatchFunction({ type: "USER_INPUT", val: event.target.value });　【←これが上のactionに入る】
-      };
-        
-
-117_2(118に英語のディスクリプションにて解説あり。多分、見てる人から説明足りないとクレームあったのか。)
-
-  useEffectを復活させるが、Dependencyに注目。
-  ビデオでは、初期段階では
+  基本はstateの挙動を確認する。
+  トグルボタン作成。
+  This is new!の文字をトグル。
   
-  [emailState, passwordState])
-  
-  を設定している。
-  これは、stateの中のvalueかisValidどちらかでも変更が加えられればuseEffectが働く事になる。
-  valueはユーザーが入力する度に変更が加わるが、useEffectでは入力内容がvalid若しくはinvalidになった時だけuseEffectが発動すれば良いので、
-  
-  [emailState.isValid, passwordState.isValid])
+  １　
+  if(!showParagraph){
+      setShowParagraph(true);
+    }else{
+      setShowParagraph(false);
+    }
 
-  とすることで、useEffectが無駄に発動しまくることを防ぐことができる。
+  ２
+    setShowParagraph(!showParagraph);
 
-  しかし、別の技・参考として、ビデオでは「オブジェクトのエイリアス」というJS機能を使っている。
-  つまり、下の場合は、emailIsValidという変数に、emailState.isValidを代入しているという意味になる。
-
-  const { isValid: emailIsValid } = emailState;
-  const { isValid: passwordIsValid } = passwordState;
-
-　[emailIsValid, passwordIsValid]);
+  ３
+    setShowParagraph(prevShowParagraph => !prevShowParagraph);
 
 
-121
+153
 
-  useContextの使い方。
-
-  通常、他のコンポーネントから変数を持ってくる場合はpropsを使うが、createContextを使うことでprops chain/props soupが必要なくなる。
-
-  手順とそれぞれの役割
-    AuthContext -> コンテクストの型を作り（＋初期値の設定）、かつベース基地となる。変数等をここに吸い上げて、コンポーネントに送る。
-    Provider -> そのコンポーネント内で得られる変数を上のベース基地に送り込む
-    Consumer -> ベース基地から変数を拝借する
-
-  この項では、isLoggedInがApp -> MainHeader -> Navigationとチェーンになっているので、useContextを使ってシンプルにしている。
-  よって、仲介しているMainHeaderのプロパティは削除。
-
-  providerの鍵かっこが二重になっていることに注意（一つ目はJSX、もう一つはオブジェクトとしてそれぞれ認識させるためのもの）
+  同じくstateがどういう挙動を示すか確認するだけ。
+  Appでprops設定、からのDemoOutput.js、その下にMyParagraph.jsを作る。
+  そしてトグルを孫、子、親それぞれ絡めて起動させる。
+  メインは、ボタン押下した時に、どのコンポーネントが更新されるかってのを確認するだけ。
+  今までやってきたことのおさらい的な？
 
 
-122
+154
 
-  Consumerをもっと簡単な形に変える。
-　　
+　React.memoの使い方と使う理由。
+　https://qiita.com/soarflat/items/b9d3d17b8ab1f5dbfed2
+　「抜粋」
+    React では、不要な再計算やコンポーネントの再レンダリングを抑えることが、パフォーマンス最適化の基本的な戦略となる。
+    それらを実現する手段としてReact.memo、useCallback、useMemoを利用する。
+    React 以外のパフォーマンスチューニングにも言えることだが、計測は必須。
+    無闇に利用してもパフォーマンスが向上するわけではなく、意味がない場合もあるため注意
 
-123
+    React.memo
+      コンポーネント（コンポーネントのレンダリング結果）をメモ化する React の API（メソッド）。
+      以下のようなコンポーネントの再レンダリングをスキップすることで、パフォーマンスの向上が期待できるから。
+      ・レンダリングコストが高いコンポーネント
+      ・頻繁に再レンダリングされるコンポーネント内の子コンポーネント
 
-  contextは、functionにも使える。
+  実証（その１）
+    App,DemoOutput,MyParagraphそれぞれにコンソールログを用意。コンポーネントがリレンダリングされればログ発動。各コンポーネントの状態の変化だけを見たいので、Appのshowプロパティはfalseで固定にする。
+    この状態でボタンを押下すると、全てのコンソールログが発動、つまり全てのコンポーネントが更新されたことがわかる。
+    次に、DemoOutputのコンポーネントの最終行を
+      export default DemoOutput; →　export default React.memo(DemoOutput);
+    に変える。
+    すると、AppとButtonのログのみが発動。
+    つまり、コンポーネントのstateに変化が無い場合は、React.memoの機能により、コンポーネントが更新されるのを防ぐ。
+    もっと分かりやすく言うと、DemoOutputに詰んである、親から来るpropsの値に変更があるかどうかによって、DemoPutputコンポーネントが更新するかしないかが決まる。propsであるshowはずっとfalseのため、コンポーネントは更新されないと言うことになる。その子コンポーネントも同じ。
 
-  NavigationのonLogoutは、同じくMainHeaderコンポーネントを介して、Appコンポーネントから引っ張ってきている。
-  よって、AppとMainHeaderのprops chainを削除して、AppのProviderに送りたいファンクションを追加、Navigationでpropsからctxに変える。
+  実証（その２）
+    では、ButtonコンポーネントもReact.memo(Button)をしてみてはどうか。なぜなら、<Button onClick={toggleParagraphHandler}>　のonClickプロパティ（toggleParagraphHandlerファンクション）も、常に機能的に変わらないものであるため。
+    しかし、React.memo(Button)としても、Button RUNNINGのログが出てしまう。
 
-  （auth-context.jsの初期値にファンクションは加えるのは次の項で。）
+  実証（その３）  
+    それでは、なぜ違いがあるのか。
+      成功　<DemoOutput show={false} />
+      失敗　<Button onClick={toggleParagraphHandler}>Toggle Paragraph!</Button>
+    つまり、propsのデータの種類の違いにある。
+    falseはboolean,toggleParagraphHandlerはメソッド。文字列、数字、booleanは、比較対象が同じであれば"==="の結果はtrueになる。一方で、オブジェクト、配列、ファンクションは、もし同じデータのように見えても、その値が更新されれば"==="で比較してもtrueにはならない。
+    Javaの授業で習った→基本型（プリミティブ型）と参照型の違い。
+    https://noumenon-th.net/programming/2017/02/11/primitive/
 
-  Contextを使わずpropsを使った方が良いケース
-  １　リンクさせたいコンポーネントがそれぞれ直接親と子で繋がっている。
-  ２　ButtonとかInputとか、一般的にspecificではなく色んなところで色んな使い方をされるものには使わない方が良い。今回のケースの場合、Buttonコンポーネント本体の中にコンテクストを入れると、Buttonの使い回しをしようとした際に、全てのButtonコンポーネントが同じコンテクストを参照してしまって、機能としてログアウトならログアウトしかできなくなってしまうということ。
+    したがって、更新前と更新後のpropsを比較して同じかどうかを見極めるのは、コンピュータ側で"前のprops===後のprops"がtrueになるかどうかで、React.memoの挙動が決まる。（9:30からのビデオも参照）
 
 
-124
+155
 
-  A ファンクションの初期値としての設定
+  useCallbackを使って、toggleParagraphHandlerファンクション（参照型）をReact.memoの対象とする。
 
-  auth-context.jsの初期値にファンクションを加えても加えなくても動作するが、vsCodeのオートコンプリーションを起動させるという意味で、ダミーとして空のファンクションを入力しておいた方がhelpful。
-
-  B （難易度高め）全てのコンポーネントでcontextを使用できるようにするには
-
-  結論としては、全てのルートコンポーネントだった<App>の上に、さらにルートコンポーネントとして、コンテキスト専用コンポーネントを設置する。
-
-    1 ベースのコンテキストコンポーネント（React.createContext）に、共用したいコンテキスト変数やファンクション（およびそれらの初期値）を入れる。
-    2 同じファイルに、新たにコンポーネントを作る。その中には、後にProviderとして共用したい変数やファンクションの挙動を設定する。
-    3 同じファイルに、次はリターン値を設定する。この中には、Providerを作って、上記2の変数やファンクションとリンクするvalueを設定する。そして、Providerのタグ同士の中に、props.children を入れる。
-    → 以上、全て同じファイル内で①コンテキストのベースと初期値設定、②使用する変数とファンクションの設定、③Providerより下階層全てにコンテキストを共用させるための処理。
-     　をいっぺんに設定している。
-
-    4 index.jsのAppコンポーネントを、上記で作成したコンポーネントで囲む。
-    5 あとは、propsで処理されているコンポーネント（特にprops soup化しているもの）で、必要なものをcontextに置き換える。
-
+  基本的には、React.memoと一緒に使うことを想定している。
+  上記のとおり、参照型はコンポーネントが更新されたら、表面上は同じに見えても、参照先が違う新たなデータに置き換わる・認識されてしまう。しかし、その参照型のデータにuseCallbackをリンクさせると、コンポーネントが更新しても、参照型データが新たなものに置き換わることなく、更新前のデータを利用することになる。
+  よって、
+    <Button onClick={toggleParagraphHandler}>Toggle Paragraph!</Button>
     
-125
-
-　Hookのルール説明。
-　コンポーネントの一番上に設定しなければダメ。ネストされていたりしたらダメ。
-　あとは、useeffectのルールとして、中の変数は全てdependencyとして設定すること。
-
-  useEffect(() => {
-    const identifier = setTimeout(() => {
-      setFormIsValid(emailIsValid && passwordIsValid);
-  ・・・・・
-  }, [emailIsValid, passwordIsValid]);
-
-　この場合、emailIsValid, passwordIsValidどちらか一方でも欠けていたら警告が出る。若しくはどちらも削除する必要がある。
-　なお、identifierはuseeffectの中で初めて設定した変数なので関係ない。
-
+    の大元である
     
-127
+    const toggleParagraphHandler = () => {
+    setShowParagraph((prevShowParagraph) => !prevShowParagraph);
+  };
+  　をuseCallbackを使って処理することで、toggleParagraphHandlerファンクションは新しいものに変わることなく、コンポーネントが更新されても同じものを使うということになる。
 
-  inputの部分をUIコンポーネントとして作成する。
-
-  １　はじめに、どこからどこまでがUIのインプット部分なのかを見極める。
-  ２　Inputコンポーネントとcssモジュールを作る。インポートやエクスポート作業も忘れずに。
-  ３　Inputコンポーネントで設定すべきプロパティがどれか（親コンポーネントにて設定すべきプロパティ）、一覧を作成する。
-  　　例えば、typeとかvalue、id、htmlForなど。クリックや入力によって動作させるためのファンクションも設定できる、onChangeとかonClickなど。
-  ４　クラスは、Inputコンポーネント独自のものの他に、親で設定できるものを設定すべき（props.className）。
-      今回のケースはそれが無いが、Buttonコンポーネントには設定されている。
-      また、今回は親が持つ変数の状態(false or true)によってInputのクラスを操作するというトリックを採用しているので注目。
+  　その状態で、React.memoによりpropsが更新されたかどうかを判断した際、参照型でもuseCallbackの対象となる参照型データであれば、propsの値が変更されたと認識されないため、
 
 
-128
+156
 
-  useRefの応用編。の前に、おさらいが少しだけ。
-　Inputコンポーネントで、useEffectを使って（dependencyは設定しない、つまりページリフレッシュした際のみの挙動）、useRefを設定したタグにカーソルがあたるようにする（フォーカス）。
-
-　inputタグにカーソルがあたるようにしたいが、inputが二つあるので、挙動としては、passwordにカーソルが当たる。なぜなら、レンダリングの順番がemailの次にpasswordが来るから。
-
-　次に本番。useEffect関連を削除、ただのおさらいだったから。
-
-　やりたいこととして、emailがfalseだったら、emailに、emailがtrueだけどpasswordがfalseだったらpasswordに、それぞれカーソルを持っていくというもの。
-
-　Loginコンポーネントより、disabledプロパティを削除して、常にボタンをアクティブにする。なお、disabledプロパティは（Buttonコンポーネントを見ればわかるが）独自にユーザが設定したものではなくて、そもそもhtmlにあるもの。
-
-　ビデオは、途中まで間違いの例を示している。
+　そもそも、useCallback()はコンポーネントが更新されてもデータを更新せず、以前のデータを使用（メモリに保存されているものをそのまま使用する＝主に参照型データを意識）するため、次のファンクションは、if内のallowToggleも外ではデータが更新されても、同じデータを使い続けるため、常に同じ結果（allowToggleの初期値がtrueならずっとtrue）になる。
 　
-　
+  const toggleParagraphHandler = useCallback(() => {
+    if (allowToggle) {
+      setShowParagraph((prevShowParagraph) => !prevShowParagraph);
+    }
+  }, []);
 
-　
+  それを解消するため、例外的にallowToggleのみコンポーネントの更新により変化があった際に反映させるために、[]の中にallowToggleを入力すると、実現することができる。ただ、その際はファンクションも新しいものに更新される。
 
-　
+  クロージャ（closure）について動画で説明されてる。
+  https://www.sejuku.net/blog/25026
+  https://note.affi-sapo-sv.com/js-closure.php
+
+
+157-159
+
+  ???今までの復習というか、あまりよくわからない。飛ばして良いっぽい。
+
+
+160(難易度高め)
+
+  一つのコンポーネントを親で呼び出す際に、二つ以上のプロパティがある場合。特に、一つはプリミティブ、一つは参照型。
+    <DemoList title={listTitle} items=[5,3,1,10,9] />
+
+  この場合、
+    export default React.memo(DemoList);
+  とすることでtitleはただの変数だから、無駄なコンポーネントの更新を避けられる。
+  ただ、このままだとtitleの中身がチェンジしなかったとしても、配列は参照型だから更新されてしまう。（Video3:00）
+
+  特に、配列はperformance-intensiveなのでデータ処理でコンピュータ的に負荷がかかりやすく、あまりよろしくない。
+
+  こうした場合、ピンポイントでitemsなどの配列部分を抽出して独自に管理する方法として、useCallbackと同じように、useMemoを使うというのがある。
+
+　１　Demolist Component
+
+    const { items } = props;  //下の注意を参照。
+    
+    const sortedList = useMemo(() => {
+    console.log('Items sorted');
+    return items.sort((a, b) => a - b);
+  }, [items]);
+
+    propsのitemsに変更があれば、発動される。ように見えるが
+
+    ただ、このままだと、itemsは配列（参照型）なので、親のApp内のitemsはAppが更新される度（例えば、他のコンポーネント、Buttonが更新されたり）に、新しいメモリを使って新しい配列（表状は数値等は同じだが）を作り保存するので、上が発動してしまう。console.logの結果を見れば確認できる。
+    これを防ぐためには、面倒だが親にもこのuseMemoを使う必要がある。
+
+  ２　App Component
+    <DemoList title={listTitle} items=useMemo(() => [5,3,1,10,9],[])/>
+    ビデオでは、最終的に効率良いコードで締めくくっている。
+
+  注意　5:22
+  Destructuring
+    以前やった、オブジェクトデータから一部のデータを抽出する方法。
+    今回のケースは、propsがオブジェクトデータを持っていて、そのうちのitemsのみを抽出する方法。
+    const { items } = props;
+
+  
+
