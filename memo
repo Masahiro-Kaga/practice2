@@ -36,3 +36,17 @@
 
 　ローディングしてる時に、Loading...を表示させる。また、データがゼロの時（該当する映画が無いとき、とボタンを押す前）Found no moviesを表示させる。
   これは、ファンクションの中で順を追って色々実行されるため、コードの順番を気をつけていれば作れる。
+
+
+178
+
+  fetch後のエラーを処理する　＆　フェッチ後の結果をletで変数化。
+  
+　トライして、エラーを投げたり、キャッチしたりの処理。
+　catch (error)　のerrorは、
+  const [error, setError] = useState(null);　のerrorではなく、
+  try　のthrowで投げられたエラーのエブジェクトが入ってる。だから別にcatch(wrong)とか違う言葉でもいい。
+
+  if(error)は、初期値がnull（falseと一緒）だから、もしここに普通の変数（error.message）が入ればtrueになる。
+
+  　
