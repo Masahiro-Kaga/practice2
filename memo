@@ -1,13 +1,20 @@
 187 - 188
 
   hooksフォルダと、その中にcustom hookを作る。
-  ForwordCounter.jsをベースに、作成する。
+  ForwardCounter.jsをベースに、作成する。
 
-  ForwordCounterは、結局　return <Card>{counter}</Card> が目的であるということを念頭に置く。
-  つまり、ForwordCounter内で、counterが導き出せれば良い。
-  よって、ForwordCounterとcustom hookであるuse-counterの核部分のコードの違いは、
+  ForwardCounterは、結局　return <Card>{counter}</Card> が目的であるということを念頭に置く。
+  つまり、ForwardCounter内で、counterが導き出せれば良い。
+  よって、ForwardCounterとcustom hookであるuse-counterの核部分のコードの違いは、
   return <Card>{counter}</Card> か、 return counter　かの違いのみ。
 
   よって、新たに作ったcustom hookでも、counterを返すようなhookを作ってexportする。
   説明にもあるが、custom hookは、一つのファンクションであると心得る。
 
+
+189
+
+  BackwardCounterも同じように適用させる。
+  そのために、custom hookの中で引数を設定し、かつ条件分岐ifを使って、各々のコンポーネントで、+と-どちらを適用させるかを設定する。
+
+  useEffectのdependencyとして、設定した引数を入れる必要がある。
