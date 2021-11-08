@@ -38,10 +38,12 @@
   これは、ファンクションの中で順を追って色々実行されるため、コードの順番を気をつけていれば作れる。
 
 
-178
+179
 
   fetch後のエラーを処理する　＆　フェッチ後の結果をletで変数化。
   
+  なぜ最初にsetError(null) を入れるか　→　その前のエラーを初期化（エラー無し）に
+
 　トライして、エラーを投げたり、キャッチしたりの処理。
 　catch (error)　のerrorは、
   const [error, setError] = useState(null);　のerrorではなく、
@@ -61,8 +63,11 @@
   例えば、console.log("something") と入れて、そのコードを　console.lg に変えて実行してみるとわかる。
   ただし、コンパイルエラー（構文エラー）であれば、常にnode.jsがコードを打つたびにチェックするので、上記は実行エラーのときのみ発生する。
 
+  letでcontentを定義して条件分岐させているが、この適用の流れとしては、fetchMoviesHandlerが走っている最中に何回か関連するstateが更新され、かつこれが走っている間でも非同期で、すぐstate更新によりlet以下を読み込み、さらにreturn以降のhtmlのコードが走るという仕組みらしい。
+  そのため、それぞれのifがstateが変更するたびにhtmlコードに適用される。
 
-179
+
+180
 
   ウェブを最初にロードした際に、ボタンを押すことなくfetchMovieHandlerを発火させる方法。
 
@@ -74,7 +79,7 @@
   ちなみに、useEffectを入力する順番に注意。もちろん、fetchMoviesHandlerファンクションを定義した後に書くこと。
 
 
-180
+181
 
   今度はリクエストを送ってデータベースに情報を保存する。
   新たに、フォームを送信するためのコンポーネントを作成（用意されている）。
@@ -83,8 +88,37 @@
   登録方法はビデオ参照。
   Firebaseは色んな機能を備えているが、今回はただそのデータベース機能のみ利用する。Rest API機能も粗縄っている。
 
+  jsonファイルじゃなきゃストアできないらしい。
 
-181
 
-  fetch()を使ってリクエストを送る。getと同じくfetchを使うのは違和感があるかもだが、fetch単体だとデフォルトがget、でも引数をpostにしてやることでpost機能に変わる。
+182
+
+  fetch()を使ってリクエストを送る。getと同じくfetchを使うのは違和感があるかもだが、fetch単体だとデフォルトがget、でもmethodの引数をpostにしてやることでpost機能に変わる。
   
+  まずはPOSTを処理し、次にGETを処理。
+  fetchするURLはどちらも共通だが、.com/　の後は、ツリーのトップの名前（自分で決める）が入り、その後ドットでjson形式を指定する。
+
+  POSTの場合は、URLの後の第二アーギュメントに、必要なオブジェクトデータを入力する。
+  内容は、
+   1 method / メソッドの種類
+   2 body / jsonファイル（JSON.stringifyでjson形式にしたいオブジェクトをjsonへ変換）
+   3 headers
+  の三つ。
+
+  ちなみに、const response = は必要ない。その後、コンソールログでどんな値を取得できているか確認するためだけに、変数化しているだけなので、await fetch・・・でオッケー。
+  また、GETの場合と同様に、try catch処理をすべきらしいが、ここのセクションでは単に省略している。
+
+  ー
+
+  GETの場合は、ループ処理が新しい。
+  その前に、dataがどんな値を持っているか、コンソールログで確認してみるのが良い。
+  for (const key in data) {　・・・
+  この場合、keyがプロパティ、dataがオブジェクトとなる。
+  　data（オブジェクト名） =
+    -Mny6E3xkfZnK3A37OVD（プロパティ）:（以下、値） {openingText: '456', releaseDate: '789', title:
+    -Mny31kHC2WJY61yiZmc（プロパティ）:（以下、値） {openingText: 'fsadfsdf', releaseDate: 'fsdfas', title: 'asdf'}
+  ここで、プロパティを取得したいのか、根を取得したいのかで記述方法が変わる。
+  それが、id: key　と　title: data[key].title　の違い。
+  次のURL参照。
+  https://www.sejuku.net/blog/20116
+
