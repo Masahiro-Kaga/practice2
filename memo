@@ -1,124 +1,13 @@
-172-174
+187 - 188
 
-  データベース、APIとReactの連携方法や関係性の説明。
+  hooksフォルダと、その中にcustom hookを作る。
+  ForwordCounter.jsをベースに、作成する。
 
+  ForwordCounterは、結局　return <Card>{counter}</Card> が目的であるということを念頭に置く。
+  つまり、ForwordCounter内で、counterが導き出せれば良い。
+  よって、ForwordCounterとcustom hookであるuse-counterの核部分のコードの違いは、
+  return <Card>{counter}</Card> か、 return counter　かの違いのみ。
 
-175
-
-  実現したいことと手順。
-  概要：非同期通信を機能させるために、同期処理でデータを順に処理していく。ボタンを押したら、APIからデータを抽出し、ダミーデータの形をもとに置き換える。
-
-  ※色んなサイトには説明に「asyncで非同期処理云々」と書いてあるけど、実際、中で順序よく処理させるためにawaitとか使ってるんじゃん、じゃあ同期処理じゃん。っていう解釈をしていたけど、多分asyncで非同期処理っていうのは、fetchMoviesHandler自体を、その他のコードと別に分けて実行するから、他コードには影響がないよっていう意味で非同期処理と言っているっぽい。
-
-  なお、thenで繋ぐのをPromiseと言う。
-
-  https://swapi.dev/api/films
-  １　スターウォーズAPIにアクセスしてデータgetする。非同期通信（Ajax）方法は、fetch関数を使用。
-  ２　既にあるダミーデータを削除。
-  ３　URLでフェッチ
-  ４　thenで全jsonデータ取得、それをthenでさらに抽出するが配列になってるので、mapで必要なデータのみ抽出、全てオブジェクト形式。
-  ５　その抽出データをuseStateで変数に入れる。
-  ６　ダミーデータをそのフェッチしたデータに置き換えるための処理をする。
-
-  注目ポイント１
-  　fetch()は、デフォルトでgetの役割を果たすらしい。
-  注目ポイント２
-    大元の持ってきたデータを、Appに格納するのか、MoviesListに格納するのか、そしてどこまで各コンポーネントでフォーマットを整えるのか、判断が重要になる。
-
-
-176
-
-  async/await　を使うパターン。
-  書き換えてみよう。
-
-
-177
-
-　ローディングしてる時に、Loading...を表示させる。また、データがゼロの時（該当する映画が無いとき、とボタンを押す前）Found no moviesを表示させる。
-  これは、ファンクションの中で順を追って色々実行されるため、コードの順番を気をつけていれば作れる。
-
-
-179
-
-  fetch後のエラーを処理する　＆　フェッチ後の結果をletで変数化。
-  
-  なぜ最初にsetError(null) を入れるか　→　その前のエラーを初期化（エラー無し）に
-
-　トライして、エラーを投げたり、キャッチしたりの処理。
-　catch (error)　のerrorは、
-  const [error, setError] = useState(null);　のerrorではなく、
-  try　のthrowで投げられたエラーのエブジェクトが入ってる。だから別にcatch(wrong)とか違う言葉でもいい。
-
-  if(error)は、初期値がnull（falseと一緒）だから、もしここに普通の変数（error.message）が入ればtrueになる。
-
-  if (response.status !== 200) {
-        throw new Error("Somthing went wrong");
-      }
-  でも良いように見えるが、これだと20x（0以外）でもエラーを投げてしまう。
-
-  throw new Error("Somthing went wrong")
-  は、無理矢理エラーを投げている構図、なぜなら、fetchのURLが誤りでも、その他のtryのコードにはエラーを発生させるような原因がないから。あくまでifがfalseとなれば、エラーオブジェクトを故意に作って投げる。
-  
-  もし、try内で通常のエラーが発生してしまえば、catch(error)は本物のエラーオブジェクトが入ってくる。
-  例えば、console.log("something") と入れて、そのコードを　console.lg に変えて実行してみるとわかる。
-  ただし、コンパイルエラー（構文エラー）であれば、常にnode.jsがコードを打つたびにチェックするので、上記は実行エラーのときのみ発生する。
-
-  letでcontentを定義して条件分岐させているが、この適用の流れとしては、fetchMoviesHandlerが走っている最中に何回か関連するstateが更新され、かつこれが走っている間でも非同期で、すぐstate更新によりlet以下を読み込み、さらにreturn以降のhtmlのコードが走るという仕組みらしい。
-  そのため、それぞれのifがstateが変更するたびにhtmlコードに適用される。
-
-
-180
-
-  ウェブを最初にロードした際に、ボタンを押すことなくfetchMovieHandlerを発火させる方法。
-
-  useEffectを使うことで実現する。
-  ビデオによると、
-    dipendencyにもfetchMoviesHandler()を入れた方が良いと。コンポーネントが更新されたら、ファンクションは参照型なので新しいファンクションとして認識されるため、dipendencyは新しいデータ・ファンクションと認識して、またrenderしてしまう。よって、このままだとinfinite loopになるから、useCallbackも組み込んで、fetchMoviesHandlerファンクションに変更が生じないという扱いにする。
-  という説明がある。その少し前には、dipendencyに何も入れないという選択肢もあるが、以降、バグが生じるかもしれないという説明。そのバグがどんな時に出るかの説明がない。
-
-  ちなみに、useEffectを入力する順番に注意。もちろん、fetchMoviesHandlerファンクションを定義した後に書くこと。
-
-
-181
-
-  今度はリクエストを送ってデータベースに情報を保存する。
-  新たに、フォームを送信するためのコンポーネントを作成（用意されている）。
-
-  FireBaseというものを使用する。ダミーバックエンドがサーバーサイドコードを書かずにフリーで使えるというもの。
-  登録方法はビデオ参照。
-  Firebaseは色んな機能を備えているが、今回はただそのデータベース機能のみ利用する。Rest API機能も粗縄っている。
-
-  jsonファイルじゃなきゃストアできないらしい。
-
-
-182
-
-  fetch()を使ってリクエストを送る。getと同じくfetchを使うのは違和感があるかもだが、fetch単体だとデフォルトがget、でもmethodの引数をpostにしてやることでpost機能に変わる。
-  
-  まずはPOSTを処理し、次にGETを処理。
-  fetchするURLはどちらも共通だが、.com/　の後は、ツリーのトップの名前（自分で決める）が入り、その後ドットでjson形式を指定する。
-
-  POSTの場合は、URLの後の第二アーギュメントに、必要なオブジェクトデータを入力する。
-  内容は、
-   1 method / メソッドの種類
-   2 body / jsonファイル（JSON.stringifyでjson形式にしたいオブジェクトをjsonへ変換）
-   3 headers
-  の三つ。
-
-  ちなみに、const response = は必要ない。その後、コンソールログでどんな値を取得できているか確認するためだけに、変数化しているだけなので、await fetch・・・でオッケー。
-  また、GETの場合と同様に、try catch処理をすべきらしいが、ここのセクションでは単に省略している。
-
-  ー
-
-  GETの場合は、ループ処理が新しい。
-  その前に、dataがどんな値を持っているか、コンソールログで確認してみるのが良い。
-  for (const key in data) {　・・・
-  この場合、keyがプロパティ、dataがオブジェクトとなる。
-  　data（オブジェクト名） =
-    -Mny6E3xkfZnK3A37OVD（プロパティ）:（以下、値） {openingText: '456', releaseDate: '789', title:
-    -Mny31kHC2WJY61yiZmc（プロパティ）:（以下、値） {openingText: 'fsadfsdf', releaseDate: 'fsdfas', title: 'asdf'}
-  ここで、プロパティを取得したいのか、根を取得したいのかで記述方法が変わる。
-  それが、id: key　と　title: data[key].title　の違い。
-  次のURL参照。
-  https://www.sejuku.net/blog/20116
+  よって、新たに作ったcustom hookでも、counterを返すようなhookを作ってexportする。
+  説明にもあるが、custom hookは、一つのファンクションであると心得る。
 
