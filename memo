@@ -85,6 +85,8 @@
   そのため、コンポーネント更新　→　dependency（fetchTasks）が更新されuseEffect発動　→ コンポーネント更新…
   という具合。
   なので、callback関数を使う必要があるということ（ここは説明省略、193序盤参照）。
+  なお、callback関数に第二引数を設定する場合とは、そのコールバック関数の中にある変数などに変化が想定されるものをdependencyとして入力すべきだが、今回はrequestConfigもapplydataも、useHttp()の引数であれば外的変数とみなされるが、コールバック関数の引数に設定されているので、callbackのdependencyとはみなされない。当然、isLoadingもerrorも、set***で変わるが変数自体はその中で使われていないので無視してオッケー。
+  （ビデオでは、external dependencyがあるかどうか、と言う言われ方をしている。）
 
   ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 
