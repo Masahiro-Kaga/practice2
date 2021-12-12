@@ -117,4 +117,9 @@ createSlice によって作成された Slice は、以下のプロパティを�
     slice.name; // Sliceの名称
     slice.reducer; // Reducer関数
     slice.actions; // Action Creator関数
+　　だから、この下二つが、実際にindex.jsの中で使われていることに注目。
 
+
+244
+
+スライスが一つだけじゃ無い場合のコーディング。
