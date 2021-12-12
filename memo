@@ -1,0 +1,120 @@
+225,226,227
+
+Reduxとは何かの説明。React Context(今までやってきたやつ)とReduxの違いなど。
+とりあえず、アプリケーションが大きくなると、いろんなファイルとかコンポーネントが増えて大変で、ネストたくさんするし、Context Provide（前にやったやつ）とかも増える、よって動きも遅くなる。ステートひとつ変われば、それもそれでパフォーマンス落ちる。
+なので、Reduxでステートを管理したら良いと。
+
+
+228
+
+どうやってReduxが動くか、その構造など。大事。
+
+
+229
+
+実際のコードを用いて、説明。
+npm initなどを用いて、実践している。
+ただ、理解しづらい部分。
+ここだととても説明がわかりやすい。
+https://qiita.com/soarflat/items/bd319695d156654bbe86
+
+
+230-231
+
+※別のファイルを参照。
+
+
+231
+
+npm install redux react-redux
+redux自体と、reduxをreactの中で使うよーのパッケージをインストール。
+※reduxは、reactだけのために作られたものではなく、他にもangular.jsとか色々なところで使われる想定もある。
+
+
+232
+
+reduxを使うための事前セッティング。
+１　reduxをインポート。import redux from "redux"として、reduxの機能丸ごとインストールしても良いが、今回は、createStoreのみをインポートしている。
+２　storeを作る。でも引数にreducerが必要なので、
+３　reducerを作る。
+４　storeをエクスポートする。
+
+
+233
+
+ルートレベルコンポーネントに、storeをインポートして、Providerをインポートして、全コンポーネントでstoreを共有する感じ。
+
+
+234
+
+stateからcounterの値を持ってくる。useSelectorを使って。
+useSelector(state => state.counter)のstateは、自ずとreduxのstateを指す。
+reduxの特徴として、stateは一つしか持つことができないので、間違えようがない。
+
+
+235
+
+reduxのstateにあるreducerを発火させて、カウンターを動かす。
+useDispatchをインポート、ボタン作って、実際にディスパッチを搭載、ボタン押したら、そのディスパッチを発動させるようにする。
+
+
+236
+
+functionalコンポーネントではなく、classベースのコンポーネントでreduxを適用させる方法（classベースではhooks使えないため）。あまり関係ないので飛ばしても良い。
+
+
+237
+
+ボタンとreducerを追加。５ずつ増えるというもの。
+これまではtypeのみをディスパッチしたら、新しいステートが返ってきたパターンだったが、ディスパッチに、typeに加えてamountというデータを送って、amountのデータをreducerで何かやって、viewに返すと言うこと。
+
+
+238
+
+toggleを機能させる。
+counterの他に、showCounterのtrue/falseデータも加える。
+の前に、initialStateの変数を作って、countReducerの変数に代入してスッキリさせる。
+state使う先で、showっていう変数を設定して、useSelectorでreduxからデータを呼び出す。
+
+
+239
+
+やっちゃいけない行為。例えばこういうのはだめ、stateをmutateしちゃうことになるから。
+if (action.type === 'increment') {
+    state.counter++;
+    return {
+      counter: state.counter,
+      showCounter: state.showCounter,
+    };
+  }
+結果的にバグが発生する原因になり得ない。
+
+
+240,241,242,243
+
+redux toolkitの導入。
+npm install @reduxjs/toolkit
+インストールが終わったら、package.jsonのredux Dependencyは削除するとマックスがいってるが、決してない。わけわからん。このtoolkitにreduxも組み込まれているとのこと。
+toolkitのルールに沿って、コードを書き換える。
+
+一番わかりやすい日本語サイト、コードの書き方もマックスと同じ。
+https://keshiwo.jp/get-started-redux/
+
+違い、とにかく覚えるしかない。
+    /import先とimportするものが変わる。
+    /reduceがsliceと言うものに置き換わり、それぞれ名前で管理できる、かつ書き方もifとかreturnとか必要なくなって、簡潔になる（ここが大きいと思う）。initialStateの設定が必要なのは変わらず。
+    /storeの作り方が変わった。creatStoreからconfiguresStoreへ。
+    /exportすべきものがもう一つ増える(action)。
+    /storeの利用先でも、dispatchの書き方ちょっと違う、あとimportするものが増えた。
+
+sliceの説明（図もあるから参照すべき）
+    Slice とは、ストア全体を構成する一部分のストアを意味します。切り取った（= slice）一部分という意味なのでしょう。前述のように、ユーザー情報、商品情報、カート情報など、状態の内容や用途ごとに State / Reducer / Action Creator を切り分けてまとめることで、コードの見通しを良くする意図があります。
+    https://www.hypertextcandy.com/learn-react-redux-with-hooks-and-redux-starter-kit
+
+createSlice によって作成された Slice は、以下のプロパティを持つオブジェクトです。
+    const slice = createSlice(/* ... */);
+
+    slice.name; // Sliceの名称
+    slice.reducer; // Reducer関数
+    slice.actions; // Action Creator関数
+
