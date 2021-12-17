@@ -19,6 +19,10 @@ button {
   border-radius: 6px;
 }
 
+.noButton{
+  background-color: gray;
+}
+
 button:hover,
 button:active {
   background-color: #5b14ac;
