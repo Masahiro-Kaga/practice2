@@ -19,4 +19,24 @@ URLに入力してページに繊維できるか試す。
 
 270
 
+a：アンカータグだけだと、ページがリフレッシュしてしまう。(検証ツールのネットワークタブで確認してみよう)
+そのため、アンカータグの代わりに、Linkファンクションをインポートして使う。
+そしたら、ページリフレッシュさせずに各ページに遷移できるイェー。
+まずMainHeaderコンポーネント作成、そこにheader,navとクラスとかcssとか。
+CSSを作って整える、index.cssとheader.cssね。
+
+
+271
+
+Linkではなく、Navlinkというものを使ってみる。
+activeは通常の働きとしては、クリックしてから話すまでのタグの状態を指名してる。
+今回紹介してる、NavLinkコンポーネントタグに適用できるactiveは少し違って、つまり今どのリンクページにいるのかということを知らせてくれるもの。cssも書き方を変える。
+試しに、.header a.active　がある状態とない状態で比較してみると良い。
+クラス名は、activeじゃなきゃならないらしい。
+
+
+272
+
+router関連のHooksを使い始める、手始めはいきなり難解なuseParams。以下参考。
+https://dev-yakuza.posstree.com/react/create-react-app/react-router/#usehistory%E3%81%A8useparams
 
