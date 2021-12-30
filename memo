@@ -35,8 +35,85 @@ activeは通常の働きとしては、クリックしてから話すまでの�
 クラス名は、activeじゃなきゃならないらしい。
 
 
-272
+272、ほぼ次の項の下準備
 
-router関連のHooksを使い始める、手始めはいきなり難解なuseParams。以下参考。
+まずは、Productページに３つの製品リストを作る。
+
+その次に、ProductDetail.js。
+App.jsで読み込むためにRouteを設定するが、
+'/product-detail/:productId' とあって、コロンの後は動的（ダイナミック）なパラメーターとなっている。言い換えると、とりあえずは、/product-detail/の後にa-bookとか２とか続いても、このページは表示される。ここに何が入るかは、その時にユーザーが何を入れるかによる。
+
+Appコンポーネントの中に、
+    <Route path='/product-detail/:productId'>
+        <ProductDetail />
+    </Route>
+とある。コロン以下がデタラメでもこのProductDetailのページに飛ぶ。が、じゃあなぜこのProductID部分が必要なのか。
+ここに入った文字や値は、ProductDetailの中で使われることになる。
+
+
+273
+
+router関連のカスタムHooksを使い始める、手始めはいきなり難解なuseParams。以下参考。
 https://dev-yakuza.posstree.com/react/create-react-app/react-router/#usehistory%E3%81%A8useparams
 
+※自分で作ったHookではないが、react-router-domから持ってきたものなので、カスタムフックと言うらしい。
+
+ここでは単純にuseParamsを使って、どう表示されるかだけ。272に沿って、ProductDetailにパラメーターが渡るかどうか、
+    <section>
+      <h1>Product Detail</h1>
+      <p>{params.productId}</p>
+    </section>
+を置いてみて、試してみる。
+
+今は実用的に使う場面ではないが、このセクション内でまた使うことがあるはず。
+
+
+274
+
+Switchとexactの使い方について。の前に、<Route path='/product-detail/:productId'>のproduct-detailをproductsに変えてみる。
+
+        （一部省略）
+        <Route path='/products'>
+        <Products />
+        </Route>
+        <Route path='/products/:productId'>
+        <ProductDetail />
+        </Route>
+
+この場合、デフォルトでは、URLがproductsで終われば、上のコンポーネントだけ表示されるが、products/...と続けて何か入れると、上も下も同時に表示される。
+
+この前後に<Switch>を入れてみる。この場合は、一番最初のみが優先的に表示されて、products/...と何か入れても、<Products />だけが表示される。
+
+ツリー的な動作をさせる場合（どっちか一方を必要の都度表示させたい）ということであれば、<Switch>に加えて、短い方（ルートに見える方）のpropにexactを入れると良い。基本、Routeとexactは必須、と言うふうに覚えておくべきかもしれない。
+
+
+275
+    07-working-with-nested-routes
+
+Nested Router、ネストされたページの作り方。
+つまり、/welcome の下に /welcome/new-user　的な。
+
+
+276
+    08-redirecting-the-user
+
+リダイレクト（redirect）とは、あるページへアクセスがあったとき、自動的に別のページへユーザーを転送する仕組みのこと。
+今回は完全にルートへ飛んできたユーザーを、Welcomeページへリダイレクトするという設定。
+重要なのは、exactを付けること。じゃないと、「/」から始まる（てか全部）ページ全部が表示されなくなる、Welcomeページが最優先になってしまうため。
+
+
+
+
+09-time-to-practice-starting-code
+10-practice-redirecting-and-extracting-params
+11-practicing-nested-routes
+12-adding-a-layout-wrapper
+13-adding-dummy-data-and-more-content
+14-outputting-data-on-details-page
+15-adding-a-notfound-page
+16-implementing-programmatic-navigation
+17-preventing-unwanted-route-transitions
+18-working-with-query-params
+19-writing-more-flexible-routing-code
+20-sending-getting-quote-data
+21-finished
