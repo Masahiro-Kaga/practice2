@@ -102,9 +102,16 @@ Nested Router、ネストされたページの作り方。
 重要なのは、exactを付けること。じゃないと、「/」から始まる（てか全部）ページ全部が表示されなくなる、Welcomeページが最優先になってしまうため。
 
 
+277     09-time-to-practice-starting-code
+
+スタートコードをコピペ。
 
 
-09-time-to-practice-starting-code
+
+
+
+
+
 10-practice-redirecting-and-extracting-params
 11-practicing-nested-routes
 12-adding-a-layout-wrapper
