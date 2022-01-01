@@ -102,25 +102,133 @@ Nested Router、ネストされたページの作り方。
 重要なのは、exactを付けること。じゃないと、「/」から始まる（てか全部）ページ全部が表示されなくなる、Welcomeページが最優先になってしまうため。
 
 
-277     09-time-to-practice-starting-code
+277_1   09-time-to-practice-starting-code
 
 スタートコードをコピペ。
 
+277_2,278,   10-practice-redirecting-and-extracting-params
+
+react-router-domをインストールするが、すでにモジュールに入ってれば必要なし。
+
+App.jsをルートコンポーネントにして、ページに以下を作成。
+    AllQuotes.js　リダイレクト先。パラメーターが何もない時にはここに飛ぶ。'/quotes'
+    QuoteDetail.js　'/quotes/'の後に動的パラメータ設定。/:quoteId。そしてpタグにそれを印字させる。
+    NewQuotes.js　'/new-quote/'
+
+（QuoteItemが修正されているが、無視）->->->282で新たに作成してる。
+
+その他、BrowserRouterとかexactとか、色々と学習したことを入れる。
+
+
+279     11-practicing-nested-routes
+
+QuoteDetail.jsの中に、ネストを設定して、Comments.jsに遷移させる・表示させる。
+h1,pも一緒に表示させるため、Switchは必要ない。
+つまり、
+/quotes/${params.quoteId}/comments
+のときにはCommentsjsを表示させるが、/commentsが無い状態なら、h1,pのみ表示させると言うこと。
+ちなみに、テンプレートリテラルを使わずに:quoteIdと入力するだけだと、そのままの文字列でしか認識されないため、もしComments.jsを表示させるだけなら問題ない。でも適切なのは、相手から受け取ったパラーメータが含まれるパスを設定した方が適切だろうと。
+
+
+280     12-adding-a-layout-wrapper
+
+LayoutとMainHeaderコンポーネントを追加する。
+目的は、NavLinkの設定とactiveClassNameの設定。いつでもどのページに遷移しても、ヘッダーが表示されるようにする。ということは？
+
+
+291     13-adding-dummy-data-and-more-content
+
+NewQuotes、AllQuotesに手を加える。
+
+まずAllQuotesは、クオーツのリストをだーっと並べるページらしいので、ここに、ダミーのデータが必要なので作る。そして、コンポーネント自体はQuoteListを使う。だから、値を渡す。その後のコンポーネントがどのようにつながっているのか辿ってみること。
+
+一方のNewQuoteページは、クオートを追加するためのページだから、addQuoteHandler() を追加する。
+QuoteFormコンポーネントにprops.onAddQuote()があってこれを発動したら、props.onAddQuote()の中の引数が上に渡って、addQuoteHandler(引数)が発動するよね。でも、とりあえずこの中は今の所コンソールログにしとく。（ここはちょっとイメージしずらい）
+
+
+282     14-outputting-data-on-details-page
+
+AllQuotes page の構成は、 QuoteList component -> QuoteItem component
+
+QuoteItem.jsの中に、リンクを設定。aタグだとページをリロードしてしまうので、この部分にLink toの後、テンプレートリテラルを使って、'/quotes/上の動的パラメータをpropsからidを'、上のコンポーネントから持ってくる。
+遷移先は、QuoteDetailページとする。そして、そのページで遷移元から持ってきた動的パラメータをpタグで印字する、暫定的に。
+
+次に、QuoteDetailsページ。findメソッド使います。あと、HilightedQuoteコンポーネントも使う。
+AllQuotesページからダミーデータを一時的に、QuoteDetailページにコピペ。最終的には、フェッチで持ってきたものを使うらしいが、持ってきたパラメータ（id部分）に対応したディテイル（text部分）を表示させるということをやる。ここで少し、マックスが何をやりたいのかわかってくる。
+ついでに、パラメーターに対応しないものが来てしまった場合、No quote found!というのをpタグで追加する。今までとちょっとifとreturnの使い方が違って、新しい。
+
+
+283     15-adding-a-notfound-page
+
+No foundページを作る、単純なもの。pタグ。
+Appに追加する。path先は、＊。これは、どんなpathでも当てはまるというものだが、Switchを使ってるため、上から順に優先的に該当するものだけが表示されるという特性を利用して、全部該当するpathがなければ、＊のpathを持ったRoute先に遷移させる。
+
+
+284     16-implementing-programmatic-navigation
+
+history.pushを使う。これは、単純に遷移先を指定してページを切り替えるというためのもの。Linkと違うところは、Linkはアンカータグとかがあって（ボタンとか他の要素に囲まれてる場合も含む）、それをクリックしてページに遷移するという。でもhistoryは、ファンクションとして使うもの、例えば次のような場合。
+    
+    const addQuoteHandler = (quoteData) => {
+        history.push('/quotes');
+    };
+    とか
+    if(somethingTrue){
+        history.push('/somewhere')
+    }
+
+今回は、NewQuoteページ。addQuoteHandlerの発火によって/quoteへ飛ばす。
+
+
+285     17-preventing-unwanted-route-transitions
+
+入力画面で、突然バックボタンとか押しちゃったりして別ページに行って、入力内容を台無しにしないようにするための機能を搭載する。useStateと、Promptというreact-router-domの別の機能、およびonFocus,onClickを使う。
+
+まずは、formエレメント内にポインタがクリックしたらtrue,送信ボタンをクリックしたらfalseになるような変数を作る。useStateと、二つのhandlerを搭載。
+
+次にFragmentで囲んで、その下とCardの間に、<Prompt>と２つのpropsを入れる。ページが更新されたり違うところに行こうとすると、警告が出てくる仕組み。２つのプロパティのうち、whenプロパティは、その値がtrueなら、二つ目のプロパティのmessageが警告として出てきて、okしたらページ移動するし、キャンセルだと止まる。
+
+てか、SPAでも、ページが変わればコンポーネントは更新されるっつーこと、証拠にauthorとtextの中が空欄になってる。
+
+
+286     18-working-with-query-params
+（ムズイ、覚えるのめんどい。とりあえず手順を踏んで。）
+
+QuoteList.jsにて。URLの一部がascかdscかで、ページ内のリストをascendの順にするかdscendの順にするかというページへ変化を加えることを目的にする。
+
+１ quote?sort=asc、で、アクセスできるようにする。
+    まずhistoryインポート。次に、onClickで発動するchangeSortingHandlerを設定。ボタンの中身はSort Ascending。
+２ history.pushで、'/quotes?sort=asc'とする。
+    そう設定すると、ボタンを押せば上のパラメーターがURLに表示される、
+    大事なのは、?以降は何を入れてもちゃんとページ遷移するという仕組みになっているということ。それがついていなかったら、＊のNot Foundページに行ってしまう。試しに、?を削除してAscendingのボタンを押してみそ。
+３ useLocationを使う。
+    一度、changeSortingHandlerの中でconsole.log()でuseLocationとuseHistoryのオブジェクトが何を返しているのか見てみるのが良い、
+
+    URLSearchParamsというものが出てきたので、以下参照、一番わかりやすい。これはJavaScriptの標準の機能。
+    https://into-the-program.com/javascript-get-url-query-parameters/
+
+    queryParams、クエリのパラメータをこの中に入れる。new URLSearchParamsを使って。
+    queryParamsもどんなものが入っているのかconsoleしてみてもいいかも。
+    あとは、sort=の先がascであればtrue、そうじゃなければfalseというものを作って、条件によってボタンをトグルし、かつsort=ascからdescにしたり、その逆にしたり。
+
+４ ソート機能搭載して、ソート後の結果を返すファンクションを作る。これは丸暗記。
+    必要な引数は二つ、、配列データとtrue/falseデータ。
+    そして、ソート後の変数（配列）を設定して、mapで展開するという流れ。
+    でもマックスが、リソースとしてコードを添付してくれている。
 
 
 
 
 
 
-10-practice-redirecting-and-extracting-params
-11-practicing-nested-routes
-12-adding-a-layout-wrapper
-13-adding-dummy-data-and-more-content
-14-outputting-data-on-details-page
-15-adding-a-notfound-page
-16-implementing-programmatic-navigation
-17-preventing-unwanted-route-transitions
-18-working-with-query-params
+
+
+
+
+
+
+
+
+
 19-writing-more-flexible-routing-code
 20-sending-getting-quote-data
 21-finished
