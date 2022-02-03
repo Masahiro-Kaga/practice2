@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Axios from "axios";
 
 function App() {
@@ -7,73 +7,74 @@ function App() {
   const [age, setAge] = useState("");
   const [username, setUsername] = useState("");
 
+  // Try to use fetch-------------------------------------------
 
-  // Try to use fetch (fail/error) -------------------------------------------
+  const sendHttpRequest = useCallback(async(method, url, data) => {
+    try{
+    const response = await fetch(url, {
+      method: method,
+      body: JSON.stringify(data),
+      headers: data ? { "Content-Type": "application/json" } : {},
+    });
+    if (response.status >= 400) {
+      return response.json().then((errorResponseData) => {
+        const error = new Error("Something wrong!");
+        error.data = errorResponseData;
+        throw error;
+      });
+    }
+    const newData = await response.json();
+    console.log(111);
+    return newData;
+  }catch(error){
+    console.log(error.message);
+  }
+  },[]);
 
-  // const sendHttpRequest = (method, url, data) => {
-  //   return fetch(url, {
-  //     method: method,
-  //     data: JSON.stringify(data),
-  //     headers: data ? { "Content-Type": "application/json" } : {},
-  //   }).then((response) => {
-  //     if (response.status >= 400) {
-  //       return response.json().then((errorResponseData) => {
-  //         const error = new Error("Something wrong!");
-  //         error.data = errorResponseData;
-  //         throw error;
-  //       });
-  //     }
-  //     return response.json();
-  //   });
-  // };
+  useEffect(async () => {
+    const res = await sendHttpRequest("GET", "http://localhost:4000/getUsers");
+    setListOfUsers(res);
+  }, [sendHttpRequest]);
 
-  // useEffect(() => {
-  //   sendHttpRequest("GET", "http://localhost:4000/getUsers").then(
-  //     (response) => {
-  //       setListOfUsers(response.data);
-  //     }
-  //   );
-  // }, []);
-
-  // const createUser = () => {
-  //   sendHttpRequest("POST", "http://localhost:4000/createUser", {
-  //     name,
-  //     age,
-  //     username,
-  //   }).then((response) => {
-  //     setListOfUsers([...listOfUsers], {
-  //       name,
-  //       age,
-  //       username,
-  //     });
-  //   });
-  // };
+  function createUser() {
+    sendHttpRequest("POST", "http://localhost:4000/createUser", {
+      name,
+      age,
+      username,
+    });
+    setListOfUsers([...listOfUsers, {
+      name,
+      age,
+      username
+    }]);
+    console.log(listOfUsers);
+  }
 
 
   // Try to use Axios (success) -------------------------------------------
 
-  useEffect(() => {
-    Axios.get("http://localhost:4000/getUsers").then((response) => {
-      setListOfUsers(response.data);
-    });
-  }, []);
+  // useEffect(() => {
+  //   Axios.get("http://localhost:4000/getUsers").then((response) => {
+  //     setListOfUsers(response.data);
+  //   });
+  // }, []);
 
-  const createUser = () => {
-    Axios.post("http://localhost:4000/createUser", {
-      name,
-      age,
-      username,
-    }).then((response) => {
-      setListOfUsers([
-        ...listOfUsers,
-        {
-          name,
-          age,
-          username,
-        },
-      ]);
-    });
-  };
+  // const createUser = () => {
+  //   Axios.post("http://localhost:4000/createUser", {
+  //     name,
+  //     age,
+  //     username,
+  //   }).then((response) => {
+  //     setListOfUsers([
+  //       ...listOfUsers,
+  //       {
+  //         name,
+  //         age,
+  //         username,
+  //       },
+  //     ]);
+  //   });
+  // };
 
   return (
     <div>
